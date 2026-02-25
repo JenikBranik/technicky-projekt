@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{ifset title}{include title|stripHtml} | {/ifset}Školní Hlášení</title>
+	{asset? 'main.js'}
+</head>
+
+<body>
+
+{if $user->isLoggedIn()}
+
+	<!-- ── Site header ─────────────────────────────────── -->
+	<header class="site-header">
+		<a href="{link Home:default}" class="site-logo">
+			<div class="site-logo-icon">📋</div>
+			<div class="site-logo-text">
+				<span class="site-logo-name">Školní Portál</span>
+				<span class="site-logo-subtitle">Anonymní hlášení přestupků</span>
+			</div>
+		</a>
+		<div class="header-spacer"></div>
+		<div class="header-tagline">
+			<span>Bezpečné a důvěrné</span>
+			Systém správy hlášení
+		</div>
+	</header>
+
+	<!-- ── Horizontal navigation ───────────────────────── -->
+	<nav class="site-nav">
+		<ul>
+			<li>
+				<a href="{link Home:profile}"
+				   n:class="($presenter->action === 'profile' && $presenter->name === 'Home') ? active">
+					👤 Profil
+				</a>
+			</li>
+			<li>
+				<a href="{link Home:myReports}"
+				   n:class="($presenter->action === 'myReports' && $presenter->name === 'Home') ? active">
+					📂 Moje hlášení
+				</a>
+			</li>
+			<li>
+				<a href="{link Home:default}"
+				   n:class="($presenter->action === 'default' && $presenter->name === 'Home') ? active">
+					📝 Nové hlášení
+				</a>
+			</li>
+			{if $user->isInRole('moderator')}
+			<li>
+				<a href="{link Home:reports}"
+				   n:class="($presenter->action === 'reports' && $presenter->name === 'Home') ? active">
+					📋 Přehled hlášení
+				</a>
+			</li>
+			{/if}
+		</ul>
+
+		<div class="nav-user-chip">
+			<span class="chip-name">{$user->identity->username}</span>
+			<span class="chip-role">{$user->roles[0]}</span>
+			<a href="{link Sign:out}" class="btn-logout-nav">Odhlásit se</a>
+		</div>
+	</nav>
+
+	<!-- ── Page body: main + aside ─────────────────────── -->
+	<div class="page-body">
+
+		<main class="page-main">
+			<div n:foreach="$flashes as $flash" n:class="flash, $flash->type">
+				{$flash->message}
+			</div>
+			{include content}
+		</main>
+
+		<aside class="page-aside">
+			<!-- Quick links panel -->
+			<div class="panel">
+				<div class="panel-head">🔗 Rychlé odkazy</div>
+				<ul class="quicklinks">
+					<li><a href="{link Home:myReports}"><span class="ql-icon">📂</span> Moje hlášení</a></li>
+					<li><a href="{link Home:default}"><span class="ql-icon">📝</span> Nové hlášení</a></li>
+					<li><a href="{link Home:profile}"><span class="ql-icon">👤</span> Můj profil</a></li>
+					{if $user->isInRole('moderator')}
+					<li><a href="{link Home:reports}"><span class="ql-icon">📋</span> Správa hlášení</a></li>
+					{/if}
+				</ul>
+			</div>
+
+			<!-- User info panel -->
+			<div class="panel">
+				<div class="panel-head">👤 Přihlášen jako</div>
+				<div class="panel-body" style="font-size:0.82rem; line-height:1.7;">
+					<strong>{$user->identity->username}</strong><br>
+					<span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:.05em;">{$user->roles[0]}</span>
+				</div>
+			</div>
+		</aside>
+
+	</div><!-- /.page-body -->
+
+{else}
+
+	<!-- ── Guest layout (login / register) ─────────────── -->
+	<!-- Minimal header for guests -->
+	<header class="site-header">
+		<div class="site-logo">
+			<div class="site-logo-icon">📋</div>
+			<div class="site-logo-text">
+				<span class="site-logo-name">Školní Portál</span>
+				<span class="site-logo-subtitle">Anonymní hlášení přestupků</span>
+			</div>
+		</div>
+	</header>
+	<nav class="site-nav" style="min-height:8px;"></nav>
+
+	<div class="guest-wrap">
+		<div class="guest-header">
+			<div class="guest-title">Portal Hlášení</div>
+			<p class="guest-subtitle">Anonymní a bezpečné hlášení školních přestupků a nedostatků</p>
+		</div>
+		<main>
+			<div n:foreach="$flashes as $flash" n:class="flash, $flash->type">
+				{$flash->message}
+			</div>
+			{include content}
+		</main>
+		<footer>
+			&copy; {date('Y')} Školní Portál. Secure Reporting System.
+		</footer>
+	</div>
+
+{/if}
+
+</body>
+</html>

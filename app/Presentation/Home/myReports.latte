@@ -1,0 +1,35 @@
+{block content}
+
+<div class="surface reports-list">
+	<h2>Moje hlášení <span class="reports-badge">{count($reports)}</span></h2>
+	<p style="color:var(--text-muted); margin-bottom:1.25rem;">Přehled všech vašich podaných hlášení.</p>
+
+	{if count($reports) === 0}
+		<p style="color:var(--text-muted); font-style:italic;">Zatím jste nepodali žádné hlášení.</p>
+	{else}
+		<table class="reports-table">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Název</th>
+					<th>Kategorie</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach $reports as $report}
+				<tr>
+					<td class="reports-id">{$report->id}</td>
+					<td><a href="{link Home:detail $report->id}" class="report-link">{$report->title}</a></td>
+					<td style="color:var(--text-muted); font-size:0.82rem;">{$report->category ?? '—'}</td>
+					<td>
+						<a href="{link Home:detail $report->id}" class="btn-secondary" style="font-size:0.78rem; padding:0.3rem 0.7rem;">
+							Zobrazit →
+						</a>
+					</td>
+				</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	{/if}
+</div>

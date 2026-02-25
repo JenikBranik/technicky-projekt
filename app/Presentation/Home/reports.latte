@@ -1,0 +1,36 @@
+{block content}
+
+<div class="surface reports-list">
+	<h2>Přehled hlášení <span class="reports-badge">{count($reports)}</span></h2>
+	<p style="color:#8b949e; margin-bottom:1.5rem;">Posledních 10 hlášení v systému.</p>
+
+	{if count($reports) === 0}
+		<p style="color:#8b949e;">Zatím žádná hlášení.</p>
+	{else}
+		<table class="reports-table">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Název</th>
+					<th>Autor</th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach $reports as $report}
+				<tr>
+					<td class="reports-id">{$report->id}</td>
+					<td><a href="{link Home:detail $report->id}" class="report-link">{$report->title}</a></td>
+					<td class="reports-author">
+						{if $report->username}
+							<span class="author-chip">{= strtoupper(substr($report->username, 0, 1))}</span>
+							{$report->username}
+						{else}
+							<span style="color:#484f58">Anonym</span>
+						{/if}
+					</td>
+				</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	{/if}
+</div>

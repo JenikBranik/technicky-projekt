@@ -1,0 +1,42 @@
+{block content}
+<div class="surface">
+	<h2>Nové hlášení</h2>
+	<p style="margin-bottom: 1.5rem; color: var(--text-muted);">Vyplňte prosím níže uvedené údaje pro vytvoření nového hlášení.</p>
+
+	<form n:name="reportForm" enctype="multipart/form-data">
+		<ul class="flash error" n:if="$form->hasErrors()">
+			<li n:foreach="$form->errors as $error">{$error}</li>
+		</ul>
+
+		<div class="form-group">
+			<label n:name="category_id">Typ přestupku / problému <span style="color:var(--error)">*</span></label>
+			<select n:name="category_id" class="form-control"></select>
+		</div>
+
+		<div class="form-group">
+			<label n:name="title">Stručný subjekt / předmět <span style="color:var(--error)">*</span></label>
+			<input n:name="title" class="form-control" placeholder="Např. Rozbité okno na chodbě">
+		</div>
+
+		<div class="form-group">
+			<label n:name="description">Podrobný popis</label>
+			<textarea n:name="description" class="form-control" placeholder="Popište podrobněji, co se stalo nebo co je špatně..."></textarea>
+		</div>
+
+		<div class="form-group">
+			<label n:name="location">Lokalita ve škole</label>
+			<input n:name="location" class="form-control" placeholder="Např. 3. patro, učebna chemie">
+		</div>
+
+		<div class="form-group">
+			<label n:name="attachment">Přiložit foto / video <span style="color:var(--text-muted); font-weight:400;">(volitelné, max 50 MB)</span></label>
+			<div class="upload-field">
+				<input n:name="attachment" class="upload-input" accept="image/*,video/*">
+				<p class="upload-hint">📎 Přetáhněte soubor sem nebo klikněte pro výběr — JPG, PNG, GIF, WEBP, MP4, WEBM</p>
+			</div>
+		</div>
+
+		<button n:name="send" class="btn-primary">Odeslat Hlášení do Systému</button>
+	</form>
+</div>
+{/block}

@@ -1,0 +1,28 @@
+{block content}
+
+<div class="profile-card surface">
+	<div class="profile-header">
+		<div class="profile-avatar-lg">
+			{= strtoupper(substr($user->identity->username, 0, 1))}
+		</div>
+		<div>
+			<h2 class="profile-username">{$user->identity->username}</h2>
+			<span class="user-role">{$user->roles[0]}</span>
+		</div>
+	</div>
+
+	<table class="profile-table">
+		<tr>
+			<th>Uživatelské jméno</th>
+			<td>{$user->identity->username}</td>
+		</tr>
+		<tr>
+			<th>Role</th>
+			<td>{$user->roles[0]}</td>
+		</tr>
+		<tr>
+			<th>ID účtu</th>
+			<td>{$user->id}</td>
+		</tr>
+	</table>
+</div>

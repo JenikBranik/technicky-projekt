@@ -1,0 +1,108 @@
+{block content}
+
+{var $isImage = fn($p) => $p && preg_match('/\.(jpe?g|png|gif|webp)$/i', $p)}
+{var $isVideo = fn($p) => $p && preg_match('/\.(mp4|webm|ogg|mov)$/i', $p)}
+
+<div class="thread-wrapper">
+
+	{* Report header *}
+	<div class="surface thread-header">
+		<div class="thread-meta">
+			<span class="thread-id">#{$report->id}</span>
+			<span class="thread-badge">{$report->ref('categories', 'category_id')->name ?? '—'}</span>
+			{if $report->location}<span class="thread-location">📍 {$report->location}</span>{/if}
+		</div>
+		<h2 class="thread-title">{$report->title}</h2>
+		{if $report->description}
+			<p class="thread-desc">{$report->description}</p>
+		{/if}
+
+		{* Report attachment *}
+		{if $report->attachment}
+			<div class="attachment-preview">
+				{if $isImage($report->attachment)}
+					<img src="/{$report->attachment}" alt="Příloha hlášení">
+				{elseif $isVideo($report->attachment)}
+					<video controls>
+						<source src="/{$report->attachment}">
+						Váš prohlížeč nepodporuje přehrávání videa.
+					</video>
+				{else}
+					<a href="/{$report->attachment}" class="attachment-link" target="_blank">📎 Stáhnout přílohu</a>
+				{/if}
+			</div>
+		{/if}
+	</div>
+
+	{* Message thread *}
+	<div class="surface" style="padding:1.25rem;">
+		<div class="thread-messages">
+
+			{if count($messages) === 0}
+				<p class="thread-empty">Zatím žádné zprávy. Začněte diskuzi níže.</p>
+			{/if}
+
+			{foreach $messages as $msg}
+				{var $isMine = ($msg->username === $user->identity->username)}
+				{var $isMod  = ($msg->role === 'moderator')}
+				<div n:class="message, $isMine ? message-mine, $isMod ? message-mod">
+					<div n:class="'message-avatar', $isMod ? 'mod'">
+						{= strtoupper(substr($msg->username, 0, 1))}
+					</div>
+					<div class="message-bubble">
+						<div class="message-meta">
+							<span class="message-author">{$msg->username}</span>
+							{if $isMod}<span class="message-role-badge">Moderátor</span>{/if}
+							<span class="message-time">{$msg->created_at|date:'d.m.Y H:i'}</span>
+						</div>
+						<div class="message-body">{$msg->message|breakLines}</div>
+
+						{* Message attachment *}
+						{if $msg->attachment}
+							<div class="attachment-preview attachment-preview--message">
+								{if $isImage($msg->attachment)}
+									<img src="/{$msg->attachment}" alt="Příloha zprávy">
+								{elseif $isVideo($msg->attachment)}
+									<video controls>
+										<source src="/{$msg->attachment}">
+										Váš prohlížeč nepodporuje přehrávání videa.
+									</video>
+								{else}
+									<a href="/{$msg->attachment}" class="attachment-link" target="_blank">📎 Stáhnout přílohu</a>
+								{/if}
+							</div>
+						{/if}
+					</div>
+				</div>
+			{/foreach}
+
+		</div>
+	</div>
+
+	{* Reply form *}
+	<div class="surface thread-reply">
+		<h3>Napsat odpověď</h3>
+		<form n:name="messageForm" enctype="multipart/form-data">
+			<ul class="flash error" n:if="$form->hasErrors()">
+				<li n:foreach="$form->errors as $error">{$error}</li>
+			</ul>
+
+			<div class="form-group">
+				<textarea n:name="message" class="form-control" placeholder="Napište zprávu…"></textarea>
+			</div>
+
+			<div class="form-group">
+				<label n:name="attachment" style="font-size:0.8rem; color:var(--text-muted); font-weight:500;">
+					Přiložit foto / video <span style="font-weight:400;">(volitelné, max 50 MB)</span>
+				</label>
+				<div class="upload-field upload-field--sm">
+					<input n:name="attachment" class="upload-input" accept="image/*,video/*">
+					<p class="upload-hint">📎 JPG, PNG, GIF, WEBP, MP4, WEBM</p>
+				</div>
+			</div>
+
+			<button n:name="send" class="btn-primary">Odeslat</button>
+		</form>
+	</div>
+
+</div>

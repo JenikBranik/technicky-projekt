@@ -1,0 +1,7 @@
+# Copy this file to local.neon and fill in your actual values.
+# local.neon is in .gitignore and will NEVER be committed.
+
+database:
+	dsn: 'pgsql:host=127.0.0.1;port=5432;dbname=YOUR_DB_NAME'
+	user: YOUR_DB_USER
+	password: YOUR_DB_PASSWORD
