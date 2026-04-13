@@ -17,6 +17,7 @@ final class RegisterPresenter extends Presenter
 	public function __construct(
 		private Explorer $database,
 		private Passwords $passwords,
+		private Nette\Mail\Mailer $mailer,
 	) {
 	}
 
@@ -37,6 +38,10 @@ final class RegisterPresenter extends Presenter
 		$form->addText('username', 'Uživatelské jméno:')
 			->setRequired('Zadejte uživatelské jméno.')
 			->setMaxLength(100);
+
+		$form->addEmail('email', 'E-mail:')
+			->setRequired('Zadejte e-mail.')
+			->setMaxLength(255);
 
 		$form->addPassword('password', 'Heslo:')
 			->setRequired('Zadejte heslo.')
@@ -70,6 +75,7 @@ final class RegisterPresenter extends Presenter
 		try {
 			$this->database->table('users')->insert([
 				'username'      => $data->username,
+				'email'         => $data->email,
 				'password_hash' => $this->passwords->hash($data->password),
 				'role'          => 'user',
 			]);
@@ -77,6 +83,19 @@ final class RegisterPresenter extends Presenter
 			// Race-condition safety net.
 			$form->addError('Uživatelské jméno je již obsazeno. Zvolte jiné.');
 			return;
+		}
+
+		// Odeslání uvítacího e-mailu
+		try {
+			$mail = new Nette\Mail\Message;
+			$mail->setFrom('no-reply@skolni-portal.cz')
+				->addTo($data->email)
+				->setSubject('Vítejte na Školním portálu')
+				->setBody("Dobrý den,\n\nděkujeme za registraci na Školním portálu.\nVaše uživatelské jméno je: {$data->username}\n\nS pozdravem\nTým Školního portálu");
+			
+			$this->mailer->send($mail);
+		} catch (\Exception $e) {
+			// Ignorujeme případnou chybu při odeslání (např. na lokálním prostředí bez mail serveru)
 		}
 
 		$this->flashMessage('Registrace proběhla úspěšně. Nyní se můžete přihlásit.', 'success');

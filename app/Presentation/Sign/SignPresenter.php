@@ -38,8 +38,6 @@ final class SignPresenter extends Presenter
 		$form->addPassword('password', 'Heslo:')
 			->setRequired('Zadejte heslo.');
 
-		$form->addCheckbox('remember', 'Zapamatovat mě na 14 dní');
-
 		$form->addSubmit('send', 'Přihlásit se');
 
 		$form->onSuccess[] = [$this, 'signInFormSucceeded'];
@@ -52,18 +50,12 @@ final class SignPresenter extends Presenter
 	{
 		try {
 			$user = $this->getUser();
-
-			if ($data->remember) {
-				$user->setExpiration('14 days');
-			} else {
-				$user->setExpiration('20 minutes', true);
-			}
-
+			$user->setExpiration('20 minutes', true);
 			$user->login($data->username, $data->password);
 			$this->redirect('Home:default');
 
 		} catch (AuthenticationException $e) {
-			$form->addError($e->getMessage());
+			$form->addError('Neplatné přihlašovací údaje.');
 		}
 	}
 }

@@ -31,3 +31,13 @@ di:
 	export:
 		parameters: no
 		tags: no
+
+services:
+	mail.mailer: Nette\Mail\SendmailMailer
+
+	# Pro SMTP (např. Gmail/OVH) odkomentujte a nastavte:
+	# mail.mailer: Nette\Mail\SmtpMailer(
+	# 	host: 'smtp.poskytovatel.cz'
+	# 	username: 'email@domena.cz'
+	# 	secure: ssl
+	# )

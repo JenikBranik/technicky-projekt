@@ -11,17 +11,12 @@ use Nette\Http\FileUpload;
 
 final class HomePresenter extends Presenter
 {
-	// Allowed MIME types for uploads
-	private const ALLOWED_MIME = [
-		'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-		'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime',
-	];
-
-	// Max upload size: 50 MB
-	private const MAX_UPLOAD_BYTES = 2_097_152; // 2 MB — matches PHP's default upload_max_filesize
+	// Max upload size: 2 MB (matches PHP's default upload_max_filesize)
+	private const MAX_UPLOAD_BYTES = 2_097_152;
 
 	public function __construct(
 		private Explorer $database,
+		private Nette\Mail\Mailer $mailer,
 	) {
 	}
 
@@ -39,6 +34,53 @@ final class HomePresenter extends Presenter
 	public function renderProfile(): void
 	{
 		// Profile data comes from $user in the template.
+	}
+
+	protected function createComponentProfileForm(): Nette\Application\UI\Form
+	{
+		$form = new Nette\Application\UI\Form;
+
+		$userRow = $this->database->table('users')->get($this->getUser()->getId());
+
+		$form->addEmail('email', 'E-mail:')
+			->setRequired('Zadejte svůj e-mail.')
+			->setDefaultValue($userRow ? $userRow->email : null)
+			->setMaxLength(255);
+
+		$form->addSubmit('send', 'Uložit e-mail');
+
+		$form->onSuccess[] = [$this, 'profileFormSucceeded'];
+
+		return $form;
+	}
+
+	public function profileFormSucceeded(Nette\Application\UI\Form $form, \stdClass $data): void
+	{
+		$this->database->table('users')
+			->where('id', $this->getUser()->getId())
+			->update([
+				'email' => $data->email,
+			]);
+
+		// Aktualizace identity v session, aby změna byla vidět hned bez odhlášení
+		$this->getUser()->getIdentity()->email = $data->email;
+
+		// Zkusit odeslat notifikační e-mail
+		try {
+			$mail = new Nette\Mail\Message;
+			$mail->setFrom('no-reply@skolni-portal.cz')
+				->addTo($data->email)
+				->setSubject('E-mail byl aktualizován')
+				->setBody("Dobrý den,\n\nváš e-mail byl úspěšně nastaven na tuto adresu.\n\nS pozdravem\nTým Školního portálu");
+			
+			$this->mailer->send($mail);
+			
+			$this->flashMessage('Váš e-mail byl úspěšně aktualizován.', 'success');
+		} catch (\Exception $e) {
+			$this->flashMessage('Váš e-mail byl aktualizován, ale odeslání notifikace se nezdařilo.', 'warning');
+		}
+		
+		$this->redirect('this');
 	}
 
 	// ── My Reports ───────────────────────────────────────────────
@@ -101,8 +143,7 @@ final class HomePresenter extends Presenter
 
 		$form->addUpload('attachment', 'Přiložit foto/video:')
 			->setRequired(false)
-			->addRule(Nette\Application\UI\Form::MimeType, 'Povolené formáty: obrázky a videa.', self::ALLOWED_MIME)
-			->addRule(Nette\Application\UI\Form::MaxFileSize, 'Maximální velikost souboru je 50 MB.', self::MAX_UPLOAD_BYTES);
+			->addRule(Nette\Application\UI\Form::MaxFileSize, 'Maximální velikost souboru je 50 MB.', self::MAX_UPLOAD_BYTES);
 
 		$form->addSubmit('send', 'Odeslat');
 
@@ -157,8 +198,7 @@ final class HomePresenter extends Presenter
 
 		$form->addUpload('attachment', 'Přiložit foto/video:')
 			->setRequired(false)
-			->addRule(Nette\Application\UI\Form::MimeType, 'Povolené formáty: obrázky a videa.', self::ALLOWED_MIME)
-			->addRule(Nette\Application\UI\Form::MaxFileSize, 'Maximální velikost souboru je 50 MB.', self::MAX_UPLOAD_BYTES);
+			->addRule(Nette\Application\UI\Form::MaxFileSize, 'Maximální velikost souboru je 50 MB.', self::MAX_UPLOAD_BYTES);
 
 		$form->addSubmit('send', 'Odeslat hlášení');
 
@@ -212,15 +252,24 @@ final class HomePresenter extends Presenter
 			return null;
 		}
 
+		// getSanitizedName() requires INTL extension — use getName() + vlastní sanitizace
+		$originalName = $upload->getName();
+		$ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+		// Whitelist povolených přípon — bez závislosti na fileinfo/finfo_file()
+		$allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'webm', 'ogg', 'mov'];
+		if (!in_array($ext, $allowed, true)) {
+			return null;
+		}
+
 		$year    = date('Y');
-		$dir     = $this->getHttpRequest()->getUrl()->getBasePath();
 		$saveDir = __DIR__ . '/../../../../www/uploads/' . $year;
 
 		if (!is_dir($saveDir)) {
 			mkdir($saveDir, 0755, true);
 		}
 
-		$ext      = strtolower(pathinfo($upload->getSanitizedName(), PATHINFO_EXTENSION));
+		// Náhodné jméno souboru — bezpečné, bez ohledu na původní název
 		$filename = bin2hex(random_bytes(12)) . '.' . $ext;
 		$upload->move($saveDir . '/' . $filename);
 
