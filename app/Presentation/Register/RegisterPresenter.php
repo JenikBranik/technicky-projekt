@@ -86,16 +86,17 @@ final class RegisterPresenter extends Presenter
 		}
 
 		// Odeslání uvítacího e-mailu
-		try {
-			$mail = new Nette\Mail\Message;
+		$mail = new Nette\Mail\Message;
 		$mail->setFrom('testovaciwebreport@seznam.cz')
 				->addTo($data->email)
 				->setSubject('Vítejte na Školním portálu')
 				->setBody("Dobrý den,\n\nděkujeme za registraci na Školním portálu.\nVaše uživatelské jméno je: {$data->username}\n\nS pozdravem\nTým Školního portálu");
-			
+			try {
 			$this->mailer->send($mail);
+			\Tracy\Debugger::log("Uvítací email úspěšně odeslán na: " . $data->email, 'mail');
 		} catch (\Exception $e) {
-			// Ignorujeme případnou chybu při odeslání (např. na lokálním prostředí bez mail serveru)
+			\Tracy\Debugger::log("CHYBA uvítacího emailu pro {$data->email}: " . $e->getMessage(), 'mail-error');
+			\Tracy\Debugger::log($e, \Tracy\Debugger::EXCEPTION);
 		}
 
 		$this->flashMessage('Registrace proběhla úspěšně. Nyní se můžete přihlásit.', 'success');

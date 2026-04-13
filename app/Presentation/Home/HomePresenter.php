@@ -66,17 +66,18 @@ final class HomePresenter extends Presenter
 		$this->getUser()->getIdentity()->email = $data->email;
 
 		// Zkusit odeslat notifikační e-mail
+		$mail = new Nette\Mail\Message;
+		$mail->setFrom('testovaciwebreport@seznam.cz')
+			->addTo($data->email)
+			->setSubject('E-mail byl aktualizován')
+			->setBody("Dobrý den,\n\nváš e-mail byl úspěšně nastaven na tuto adresu.\n\nS pozdravem\nTým Školního portálu");
 		try {
-			$mail = new Nette\Mail\Message;
-			$mail->setFrom('testovaciwebreport@seznam.cz')
-				->addTo($data->email)
-				->setSubject('E-mail byl aktualizován')
-				->setBody("Dobrý den,\n\nváš e-mail byl úspěšně nastaven na tuto adresu.\n\nS pozdravem\nTým Školního portálu");
-			
 			$this->mailer->send($mail);
-			
+			\Tracy\Debugger::log("Email 'Potvrzení změny' úspěšně odeslán na: " . $data->email, 'mail');
 			$this->flashMessage('Váš e-mail byl úspěšně aktualizován.', 'success');
 		} catch (\Exception $e) {
+			\Tracy\Debugger::log("CHYBA odesílání na {$data->email}: " . $e->getMessage(), 'mail-error');
+			\Tracy\Debugger::log($e, \Tracy\Debugger::EXCEPTION);
 			$this->flashMessage('Váš e-mail byl aktualizován, ale odeslání notifikace se nezdařilo.', 'warning');
 		}
 		
@@ -242,16 +243,17 @@ final class HomePresenter extends Presenter
 		// Odeslání potvrzovacího e-mailu uživateli
 		$userRow = $this->database->table('users')->get($this->getUser()->getId());
 		if ($userRow && $userRow->email) {
+			$mail = new Nette\Mail\Message;
+			$mail->setFrom('testovaciwebreport@seznam.cz')
+				->addTo($userRow->email)
+				->setSubject('Hlášení přijato do systému: ' . $data->title)
+				->setBody("Dobrý den,\n\nvaše hlášení „{$data->title}“ bylo úspěšně přijato do systému.\n\nO dalším postupu vás budeme informovat e-mailem.\nDetail hlášení můžete sledovat zde: " . $this->link('//Home:detail', ['id' => $this->database->getInsertId()]));
 			try {
-				$mail = new Nette\Mail\Message;
-				$mail->setFrom('testovaciwebreport@seznam.cz')
-					->addTo($userRow->email)
-					->setSubject('Hlášení přijato do systému: ' . $data->title)
-					->setBody("Dobrý den,\n\nvaše hlášení „{$data->title}“ bylo úspěšně přijato do systému.\n\nO dalším postupu vás budeme informovat e-mailem.\nDetail hlášení můžete sledovat zde: " . $this->link('//Home:detail', ['id' => $this->database->getInsertId()]));
-				
 				$this->mailer->send($mail);
+				\Tracy\Debugger::log("Email 'Hlášení přijato' úspěšně odeslán na: " . $userRow->email, 'mail');
 			} catch (\Exception $e) {
-				// Ignorujeme chybu odeslání
+				\Tracy\Debugger::log("CHYBA odesílání na {$userRow->email}: " . $e->getMessage(), 'mail-error');
+				\Tracy\Debugger::log($e, \Tracy\Debugger::EXCEPTION);
 			}
 		}
 
