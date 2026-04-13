@@ -1,7 +1,18 @@
 {block content}
 
-<h2>Přihlášení</h2>
+<div class="surface login-surface">
+	<div class="login-header">
+		<h1>Portal Hlášení</h1>
+		<p>Bezpečné hlášení školních přestupků a nedostatků</p>
+	</div>
 
-{control signInForm}
+	<div class="login-form">
+		<h2>Přihlášení</h2>
+		{control signInForm}
+	</div>
+</div>
 
-<p>Nemáte účet? <a href="{link Register:default}">Zaregistrujte se</a>.</p>
+<p class="login-register">
+	Nemáte účet?
+	<a href="{link Register:default}">Zaregistrujte se</a>.
+</p>

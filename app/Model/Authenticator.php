@@ -49,7 +49,10 @@ final class Authenticator implements Nette\Security\Authenticator
 		return new SimpleIdentity(
 			$row->id,
 			$row->role,
-			['username' => $row->username],
+			[
+				'username' => $row->username,
+				'email'    => $row->email,
+			],
 		);
 	}
 }

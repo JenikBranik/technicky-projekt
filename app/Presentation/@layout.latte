@@ -4,7 +4,37 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>{ifset title}{include title|stripHtml} | {/ifset}Školní Hlášení</title>
+	<style>
+		/* Anti-FOUC: schovej stranku dokud se CSS nenacte */
+		html { visibility: hidden; }
+		html.css-loaded { visibility: visible; }
+		/* Zakladni barvy okamzite - zabrání cukání barev pri nacitani */
+		body { background: #f1f5f9; margin: 0; font-family: Inter, system-ui, sans-serif; }
+	</style>
 	{asset? 'main.js'}
+	<script>
+		// Odhal stranku az po tom, co Vite injektuje CSS (zabrání FOUC)
+		(function() {
+			var revealed = false;
+			function reveal() {
+				if (!revealed) { revealed = true; document.documentElement.classList.add('css-loaded'); }
+			}
+			// Fallback: max 800ms cekani
+			var timer = setTimeout(reveal, 800);
+			// Sleduj pridani <style> tagu Vitem
+			var obs = new MutationObserver(function() {
+				if (document.querySelector('style[data-vite-dev-id], link[rel="stylesheet"]')) {
+					clearTimeout(timer);
+					// Kratky tick pro aplikaci stylu
+					requestAnimationFrame(function() { requestAnimationFrame(reveal); });
+					obs.disconnect();
+				}
+			});
+			obs.observe(document.head, { childList: true });
+			// Pokud uz je style tag pritomen (napr. build mode)
+			if (document.querySelector('link[rel="stylesheet"]')) { clearTimeout(timer); reveal(); obs.disconnect(); }
+		})();
+	</script>
 </head>
 
 <body>
@@ -14,10 +44,9 @@
 	<!-- ── Site header ─────────────────────────────────── -->
 	<header class="site-header">
 		<a href="{link Home:default}" class="site-logo">
-			<div class="site-logo-icon">📋</div>
 			<div class="site-logo-text">
 				<span class="site-logo-name">Školní Portál</span>
-				<span class="site-logo-subtitle">Anonymní hlášení přestupků</span>
+				<span class="site-logo-subtitle">hlášení přestupků</span>
 			</div>
 		</a>
 		<div class="header-spacer"></div>
@@ -107,20 +136,15 @@
 	<!-- Minimal header for guests -->
 	<header class="site-header">
 		<div class="site-logo">
-			<div class="site-logo-icon">📋</div>
 			<div class="site-logo-text">
 				<span class="site-logo-name">Školní Portál</span>
-				<span class="site-logo-subtitle">Anonymní hlášení přestupků</span>
+				<span class="site-logo-subtitle">hlášení přestupků</span>
 			</div>
 		</div>
 	</header>
 	<nav class="site-nav" style="min-height:8px;"></nav>
 
 	<div class="guest-wrap">
-		<div class="guest-header">
-			<div class="guest-title">Portal Hlášení</div>
-			<p class="guest-subtitle">Anonymní a bezpečné hlášení školních přestupků a nedostatků</p>
-		</div>
 		<main>
 			<div n:foreach="$flashes as $flash" n:class="flash, $flash->type">
 				{$flash->message}
