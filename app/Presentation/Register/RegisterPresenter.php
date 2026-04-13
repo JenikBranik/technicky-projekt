@@ -88,7 +88,7 @@ final class RegisterPresenter extends Presenter
 		// Odeslání uvítacího e-mailu
 		try {
 			$mail = new Nette\Mail\Message;
-			$mail->setFrom('no-reply@skolni-portal.cz')
+		$mail->setFrom('testovaciwebreport@seznam.cz')
 				->addTo($data->email)
 				->setSubject('Vítejte na Školním portálu')
 				->setBody("Dobrý den,\n\nděkujeme za registraci na Školním portálu.\nVaše uživatelské jméno je: {$data->username}\n\nS pozdravem\nTým Školního portálu");

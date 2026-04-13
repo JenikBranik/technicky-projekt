@@ -68,7 +68,7 @@ final class HomePresenter extends Presenter
 		// Zkusit odeslat notifikační e-mail
 		try {
 			$mail = new Nette\Mail\Message;
-			$mail->setFrom('no-reply@skolni-portal.cz')
+			$mail->setFrom('testovaciwebreport@seznam.cz')
 				->addTo($data->email)
 				->setSubject('E-mail byl aktualizován')
 				->setBody("Dobrý den,\n\nváš e-mail byl úspěšně nastaven na tuto adresu.\n\nS pozdravem\nTým Školního portálu");
@@ -173,7 +173,7 @@ final class HomePresenter extends Presenter
 			if ($owner && $owner->email) {
 				try {
 					$mail = new Nette\Mail\Message;
-					$mail->setFrom('no-reply@skolni-portal.cz')
+					$mail->setFrom('testovaciwebreport@seznam.cz')
 						->addTo($owner->email)
 						->setSubject('Nová zpráva u vašeho hlášení: ' . $report->title)
 						->setBody("Dobrý den,\n\nu vašeho hlášení „{$report->title}“ se objevila nová zpráva.\n\nText zprávy:\n{$data->message}\n\nMůžete na ni odpovědět v portálu: " . $this->link('//Home:detail', ['id' => $id]));
@@ -244,7 +244,7 @@ final class HomePresenter extends Presenter
 		if ($userRow && $userRow->email) {
 			try {
 				$mail = new Nette\Mail\Message;
-				$mail->setFrom('no-reply@skolni-portal.cz')
+				$mail->setFrom('testovaciwebreport@seznam.cz')
 					->addTo($userRow->email)
 					->setSubject('Hlášení přijato do systému: ' . $data->title)
 					->setBody("Dobrý den,\n\nvaše hlášení „{$data->title}“ bylo úspěšně přijato do systému.\n\nO dalším postupu vás budeme informovat e-mailem.\nDetail hlášení můžete sledovat zde: " . $this->link('//Home:detail', ['id' => $this->database->getInsertId()]));
