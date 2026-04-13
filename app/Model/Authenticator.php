@@ -41,6 +41,10 @@ final class Authenticator implements Nette\Security\Authenticator
 			throw new AuthenticationException('Zadané heslo je nesprávné.', self::InvalidCredential);
 		}
 
+		if ($row->is_blocked) {
+			throw new AuthenticationException('Váš účet byl zablokován. Kontaktujte správce systému.', self::Failure);
+		}
+
 		// Rehash the password if the hashing options changed (e.g. cost factor bump).
 		if ($this->passwords->needsRehash($row->password_hash)) {
 			$row->update(['password_hash' => $this->passwords->hash($password)]);

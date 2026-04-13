@@ -20,7 +20,8 @@ CREATE TABLE users (
     email         VARCHAR(255),
     password_hash VARCHAR(255) NOT NULL,
     role          VARCHAR(20)  NOT NULL DEFAULT 'user'
-                  CHECK (role IN ('user', 'moderator'))
+                  CHECK (role IN ('user', 'moderator', 'admin')),
+    is_blocked    BOOLEAN      NOT NULL DEFAULT FALSE
 );
 
 -- =============================================================
@@ -76,7 +77,7 @@ INSERT INTO categories (name) VALUES
     ('Jiný problém');
 
 -- =============================================================
---  Seed data – default moderator account
+--  Seed data – default admin account
 --
 --  Username : admin
 --  Password : Admin1234
@@ -90,5 +91,5 @@ INSERT INTO categories (name) VALUES
 INSERT INTO users (username, password_hash, role) VALUES (
     'admin',
     '$2y$10$7EqJtq98hPqEX7fNZaFWoOe1ErkVyq/4lHKDEn3OKZV31fNMjkbam',
-    'moderator'
+    'admin'
 );

@@ -73,11 +73,8 @@ final class HomePresenter extends Presenter
 			->setBody("Dobrý den,\n\nváš e-mail byl úspěšně nastaven na tuto adresu.\n\nS pozdravem\nTým Školního portálu");
 		try {
 			$this->mailer->send($mail);
-			\Tracy\Debugger::log("Email 'Potvrzení změny' úspěšně odeslán na: " . $data->email, 'mail');
 			$this->flashMessage('Váš e-mail byl úspěšně aktualizován.', 'success');
 		} catch (\Exception $e) {
-			\Tracy\Debugger::log("CHYBA odesílání na {$data->email}: " . $e->getMessage(), 'mail-error');
-			\Tracy\Debugger::log($e, \Tracy\Debugger::EXCEPTION);
 			$this->flashMessage('Váš e-mail byl aktualizován, ale odeslání notifikace se nezdařilo.', 'warning');
 		}
 		
@@ -111,7 +108,7 @@ final class HomePresenter extends Presenter
 		}
 
 		// Regular users can only see their own reports.
-		if (!$this->getUser()->isInRole('moderator') && $report->user_id !== $this->getUser()->getId()) {
+		if (!$this->getUser()->isInRole('moderator') && !$this->getUser()->isInRole('admin') && $report->user_id !== $this->getUser()->getId()) {
 			$this->redirect('Home:default');
 		}
 
@@ -250,10 +247,7 @@ final class HomePresenter extends Presenter
 				->setBody("Dobrý den,\n\nvaše hlášení „{$data->title}“ bylo úspěšně přijato do systému.\n\nO dalším postupu vás budeme informovat e-mailem.\nDetail hlášení můžete sledovat zde: " . $this->link('//Home:detail', ['id' => $this->database->getInsertId()]));
 			try {
 				$this->mailer->send($mail);
-				\Tracy\Debugger::log("Email 'Hlášení přijato' úspěšně odeslán na: " . $userRow->email, 'mail');
 			} catch (\Exception $e) {
-				\Tracy\Debugger::log("CHYBA odesílání na {$userRow->email}: " . $e->getMessage(), 'mail-error');
-				\Tracy\Debugger::log($e, \Tracy\Debugger::EXCEPTION);
 			}
 		}
 
@@ -265,8 +259,8 @@ final class HomePresenter extends Presenter
 
 	public function renderReports(): void
 	{
-		// Moderator-only page.
-		if (!$this->getUser()->isInRole('moderator')) {
+		// Moderator/Admin-only page.
+		if (!$this->getUser()->isInRole('moderator') && !$this->getUser()->isInRole('admin')) {
 			$this->redirect('Home:default');
 		}
 

@@ -2,6 +2,7 @@ services:
 	- App\Core\RouterFactory::createRouter
 #	- App\Presentation\Home\HomePresenter
 	- App\Model\Authenticator
+	- App\Model\UserManager
 
 search:
 	-	in: %appDir%
