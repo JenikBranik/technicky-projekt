@@ -300,7 +300,7 @@ final class HomePresenter extends Presenter
 		}
 
 		$year    = date('Y');
-		$saveDir = __DIR__ . '/../../../../www/uploads/' . $year;
+		$saveDir = __DIR__ . '/../../../www/uploads/' . $year;
 
 		if (!is_dir($saveDir)) {
 			mkdir($saveDir, 0755, true);
