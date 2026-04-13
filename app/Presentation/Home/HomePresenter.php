@@ -166,6 +166,25 @@ final class HomePresenter extends Presenter
 			'created_at' => new \DateTimeImmutable,
 		]);
 
+		// Odeslání e-mailové notifikace vlastníkovi hlášení (pokud zprávu píše někdo jiný)
+		$report = $this->database->table('reports')->get($id);
+		if ($report && $report->user_id !== $this->getUser()->getId()) {
+			$owner = $this->database->table('users')->get($report->user_id);
+			if ($owner && $owner->email) {
+				try {
+					$mail = new Nette\Mail\Message;
+					$mail->setFrom('no-reply@skolni-portal.cz')
+						->addTo($owner->email)
+						->setSubject('Nová zpráva u vašeho hlášení: ' . $report->title)
+						->setBody("Dobrý den,\n\nu vašeho hlášení „{$report->title}“ se objevila nová zpráva.\n\nText zprávy:\n{$data->message}\n\nMůžete na ni odpovědět v portálu: " . $this->link('//Home:detail', ['id' => $id]));
+					
+					$this->mailer->send($mail);
+				} catch (\Exception $e) {
+					// Ignorujeme chybu odeslání, aby aplikace nespadla
+				}
+			}
+		}
+
 		$this->redirect('this');
 	}
 
@@ -219,6 +238,22 @@ final class HomePresenter extends Presenter
 			'attachment'  => $attachmentPath,
 			'user_id'     => $this->getUser()->getId(),
 		]);
+
+		// Odeslání potvrzovacího e-mailu uživateli
+		$userRow = $this->database->table('users')->get($this->getUser()->getId());
+		if ($userRow && $userRow->email) {
+			try {
+				$mail = new Nette\Mail\Message;
+				$mail->setFrom('no-reply@skolni-portal.cz')
+					->addTo($userRow->email)
+					->setSubject('Hlášení přijato do systému: ' . $data->title)
+					->setBody("Dobrý den,\n\nvaše hlášení „{$data->title}“ bylo úspěšně přijato do systému.\n\nO dalším postupu vás budeme informovat e-mailem.\nDetail hlášení můžete sledovat zde: " . $this->link('//Home:detail', ['id' => $this->database->getInsertId()]));
+				
+				$this->mailer->send($mail);
+			} catch (\Exception $e) {
+				// Ignorujeme chybu odeslání
+			}
+		}
 
 		$this->flashMessage('Hlášení bylo úspěšně uloženo do systému.', 'success');
 		$this->redirect('this');
