@@ -77,11 +77,19 @@
 					📝 Nové hlášení
 				</a>
 			</li>
-			{if $user->isInRole('moderator')}
+			{if $user->isInRole('moderator') || $user->isInRole('admin')}
 			<li>
 				<a href="{link Home:reports}"
 				   n:class="($presenter->action === 'reports' && $presenter->name === 'Home') ? active">
 					📋 Přehled hlášení
+				</a>
+			</li>
+			{/if}
+			{if $user->isInRole('admin')}
+			<li>
+				<a href="{link Admin:default}"
+				   n:class="($presenter->name === 'Admin') ? active">
+					🔑 Admin panel
 				</a>
 			</li>
 			{/if}
@@ -112,8 +120,11 @@
 					<li><a href="{link Home:myReports}"><span class="ql-icon">📂</span> Moje hlášení</a></li>
 					<li><a href="{link Home:default}"><span class="ql-icon">📝</span> Nové hlášení</a></li>
 					<li><a href="{link Home:profile}"><span class="ql-icon">👤</span> Můj profil</a></li>
-					{if $user->isInRole('moderator')}
+					{if $user->isInRole('moderator') || $user->isInRole('admin')}
 					<li><a href="{link Home:reports}"><span class="ql-icon">📋</span> Správa hlášení</a></li>
+					{/if}
+					{if $user->isInRole('admin')}
+					<li><a href="{link Admin:default}"><span class="ql-icon">🔑</span> Admin panel</a></li>
 					{/if}
 				</ul>
 			</div>

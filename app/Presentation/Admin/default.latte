@@ -1,0 +1,111 @@
+{block title}Admin panel{/block}
+
+{block content}
+<div class="admin-panel">
+	<h1 class="page-title">🔑 Správa uživatelů</h1>
+
+	<div class="admin-toolbar">
+		<form method="get" action="{link Admin:default}" class="search-form">
+			<input type="text" name="search" placeholder="Hledat jméno..." value="{$presenter->search}" class="search-input">
+			<button type="submit" class="btn-search">Hledat</button>
+			{if $presenter->search !== ''}
+				<a href="{link Admin:default search => ''}" class="btn-clear">Zrušit filtr</a>
+			{/if}
+		</form>
+	</div>
+
+	<div class="table-wrap">
+		<table class="admin-table">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Uživatelské jméno</th>
+					<th>E-mail</th>
+					<th>Role</th>
+					<th>Stav</th>
+					<th>Akce</th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach $users as $u}
+				{var $isBlocked = $u->is_blocked === true || $u->is_blocked === 't' || $u->is_blocked === '1' || $u->is_blocked === 1}
+				<tr n:class="$isBlocked ? 'row-blocked'">
+					<td class="td-id">{$u->id}</td>
+					<td class="td-name">
+						<strong>{$u->username}</strong>
+					</td>
+					<td class="td-email">{$u->email ?: '—'}</td>
+					<td class="td-role">
+						{if $u->role === 'admin'}
+							<span class="badge badge-admin">admin</span>
+						{else}
+							<form method="get" action="{link this}" class="inline-form">
+								<input type="hidden" name="do" value="setRole">
+								<input type="hidden" name="userId" value="{$u->id}">
+								<select name="role" onchange="this.form.submit()" class="role-select">
+									{foreach $assignableRoles as $r}
+										<option value="{$r}" {if $u->role === $r}selected{/if}>{$r}</option>
+									{/foreach}
+								</select>
+								<noscript><button type="submit">Uložit</button></noscript>
+							</form>
+						{/if}
+					</td>
+					<td class="td-status">
+						{if $isBlocked}
+							<span class="badge badge-blocked">Zablokován</span>
+						{else}
+							<span class="badge badge-active">Aktivní</span>
+						{/if}
+					</td>
+					<td class="td-actions">
+						{if $u->role !== 'admin'}
+							<a href="{link toggleBlock!, userId => $u->id}"
+							   class="btn-action {if $isBlocked}btn-unblock{else}btn-block{/if}">
+								{if $isBlocked}✅ Odblokovat{else}🚫 Blokovat{/if}
+							</a>
+						{else}
+							<span class="text-muted">—</span>
+						{/if}
+					</td>
+				</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<style>
+.admin-panel { max-width: 900px; margin: 0 auto; }
+.page-title { font-size: 1.35rem; font-weight: 700; margin-bottom: 1.2rem; color: var(--text-main, #1e293b); }
+.table-wrap { overflow-x: auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.admin-table { width: 100%; border-collapse: collapse; background: #fff; font-size: .87rem; }
+.admin-table thead th { background: var(--primary, #4f46e5); color: #fff; padding: .7rem 1rem; text-align: left; font-weight: 600; white-space: nowrap; }
+.admin-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
+.admin-table tbody tr:hover { background: #f8faff; }
+.admin-table tbody tr.row-blocked { background: #fff5f5; }
+.admin-table td { padding: .65rem 1rem; vertical-align: middle; }
+.td-id { color: #94a3b8; width: 3rem; }
+.badge { display: inline-block; padding: .2rem .55rem; border-radius: 999px; font-size: .73rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.badge-admin { background: #ede9fe; color: #6d28d9; }
+.badge-active { background: #dcfce7; color: #16a34a; }
+.badge-blocked { background: #fee2e2; color: #dc2626; }
+.inline-form { display: inline; }
+.role-select { border: 1.5px solid #e2e8f0; border-radius: 6px; padding: .3rem .5rem; font-size: .82rem; background: #f8faff; cursor: pointer; }
+.role-select:focus { outline: none; border-color: var(--primary, #4f46e5); }
+.btn-action { display: inline-block; padding: .3rem .75rem; border-radius: 6px; font-size: .8rem; font-weight: 600; text-decoration: none; transition: opacity .15s; }
+.btn-block { background: #fee2e2; color: #dc2626; }
+.btn-block:hover { opacity: .8; }
+.btn-unblock { background: #dcfce7; color: #16a34a; }
+.btn-unblock:hover { opacity: .8; }
+.text-muted { color: #94a3b8; }
+.admin-toolbar { margin-bottom: 1.5rem; }
+.search-form { display: flex; gap: 0.5rem; align-items: center; }
+.search-input { padding: 0.5rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.87rem; min-width: 250px; outline: none; }
+.search-input:focus { border-color: var(--primary, #4f46e5); box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1); }
+.btn-search { background: var(--primary, #4f46e5); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; font-size: 0.87rem; cursor: pointer; }
+.btn-search:hover { opacity: .9; }
+.btn-clear { color: #64748b; font-size: 0.82rem; text-decoration: none; padding: 0.4rem 0.8rem; border-radius: 6px; }
+.btn-clear:hover { background: #f1f5f9; color: #334155; }
+</style>
+{/block}
