@@ -87,7 +87,7 @@ final class HomePresenter extends Presenter
 	{
 		$this->template->reports = $this->database
 			->query(
-				'SELECT r.id, r.title, c.name AS category
+				'SELECT r.id, r.title, r.status, c.name AS category
 				 FROM reports r
 				 LEFT JOIN categories c ON c.id = r.category_id
 				 WHERE r.user_id = ?
@@ -153,6 +153,13 @@ final class HomePresenter extends Presenter
 	public function messageFormSucceeded(Nette\Application\UI\Form $form, \stdClass $data): void
 	{
 		$id = (int) $this->getParameter('id');
+
+		// Refuse messages on closed reports
+		$checkReport = $this->database->table('reports')->get($id);
+		if ($checkReport && $checkReport->status === 'closed') {
+			$this->flashMessage('Toto hlášení je uzavřeno. Nelze přidávat nové zprávy.', 'error');
+			$this->redirect('this');
+		}
 
 		$attachmentPath = $this->saveUpload($data->attachment);
 
@@ -253,6 +260,40 @@ final class HomePresenter extends Presenter
 
 		$this->flashMessage('Hlášení bylo úspěšně uloženo do systému.', 'success');
 		$this->redirect('this');
+	}
+
+	// ── Close / Reopen report (mod/admin signals) ────────────────
+
+	public function handleCloseReport(int $id): void
+	{
+		if (!$this->getUser()->isInRole('moderator') && !$this->getUser()->isInRole('admin')) {
+			$this->redirect('Home:default');
+		}
+
+		$report = $this->database->table('reports')->get($id);
+		if (!$report) {
+			$this->error('Hlášení nebylo nalezeno.', 404);
+		}
+
+		$report->update(['status' => 'closed']);
+		$this->flashMessage('Hlášení bylo uzavřeno.', 'success');
+		$this->redirect('Home:detail', $id);
+	}
+
+	public function handleReopenReport(int $id): void
+	{
+		if (!$this->getUser()->isInRole('moderator') && !$this->getUser()->isInRole('admin')) {
+			$this->redirect('Home:default');
+		}
+
+		$report = $this->database->table('reports')->get($id);
+		if (!$report) {
+			$this->error('Hlášení nebylo nalezeno.', 404);
+		}
+
+		$report->update(['status' => 'open']);
+		$this->flashMessage('Hlášení bylo znovu otevřeno.', 'success');
+		$this->redirect('Home:detail', $id);
 	}
 
 	// ── Moderator report list ─────────────────────────────────────

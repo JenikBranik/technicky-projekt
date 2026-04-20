@@ -112,33 +112,6 @@
 			{include content}
 		</main>
 
-		<aside class="page-aside">
-			<!-- Quick links panel -->
-			<div class="panel">
-				<div class="panel-head">🔗 Rychlé odkazy</div>
-				<ul class="quicklinks">
-					<li><a href="{link Home:myReports}"><span class="ql-icon">📂</span> Moje hlášení</a></li>
-					<li><a href="{link Home:default}"><span class="ql-icon">📝</span> Nové hlášení</a></li>
-					<li><a href="{link Home:profile}"><span class="ql-icon">👤</span> Můj profil</a></li>
-					{if $user->isInRole('moderator') || $user->isInRole('admin')}
-					<li><a href="{link Home:reports}"><span class="ql-icon">📋</span> Správa hlášení</a></li>
-					{/if}
-					{if $user->isInRole('admin')}
-					<li><a href="{link Admin:default}"><span class="ql-icon">🔑</span> Admin panel</a></li>
-					{/if}
-				</ul>
-			</div>
-
-			<!-- User info panel -->
-			<div class="panel">
-				<div class="panel-head">👤 Přihlášen jako</div>
-				<div class="panel-body" style="font-size:0.82rem; line-height:1.7;">
-					<strong>{$user->identity->username}</strong><br>
-					<span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:.05em;">{$user->roles[0]}</span>
-				</div>
-			</div>
-		</aside>
-
 	</div><!-- /.page-body -->
 
 {else}

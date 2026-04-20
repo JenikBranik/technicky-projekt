@@ -13,15 +13,24 @@
 					<th>#</th>
 					<th>Název</th>
 					<th>Kategorie</th>
+					<th>Stav</th>
 					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				{foreach $reports as $report}
-				<tr>
+				{var $isClosed = ($report->status === 'closed')}
+				<tr n:class="$isClosed ? 'row-closed'">
 					<td class="reports-id">{$report->id}</td>
 					<td><a href="{link Home:detail $report->id}" class="report-link">{$report->title}</a></td>
 					<td style="color:var(--text-muted); font-size:0.82rem;">{$report->category ?? '—'}</td>
+					<td>
+						{if $isClosed}
+							<span class="badge-status badge-closed">✅ Vyřešeno</span>
+						{else}
+							<span class="badge-status badge-open">🟡 Otevřeno</span>
+						{/if}
+					</td>
 					<td>
 						<a href="{link Home:detail $report->id}" class="btn-secondary" style="font-size:0.78rem; padding:0.3rem 0.7rem;">
 							Zobrazit →
