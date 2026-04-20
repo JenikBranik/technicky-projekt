@@ -42,7 +42,9 @@ CREATE TABLE reports (
     description TEXT,
     location    VARCHAR(100),
     user_id     INTEGER      REFERENCES users(id) ON DELETE SET NULL,
-    attachment  VARCHAR(255)
+    attachment  VARCHAR(255),
+    status      VARCHAR(20)  NOT NULL DEFAULT 'open'
+                CHECK (status IN ('open', 'closed'))
 );
 
 -- =============================================================
