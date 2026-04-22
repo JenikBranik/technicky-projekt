@@ -1,4 +1,4 @@
-Nette Web Project
+Web Project
 =================
 
 Welcome to the Nette Web Project! This is a basic skeleton application built using
